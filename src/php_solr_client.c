@@ -708,19 +708,19 @@ PHP_METHOD(SolrClient, query)
 }
 /* }}} */
 
-/* {{{ proto SolrUpdateResponse SolrClient::addDocument(SolrInputDocument doc [, bool allowDups [, int commitWithin]])
+/* {{{ proto SolrUpdateResponse SolrClient::addDocument(SolrInputDocument doc [, bool overwrite [, int commitWithin]])
    Adds a document to the Solr server. */
 PHP_METHOD(SolrClient, addDocument)
 {
 	zval *solr_input_doc = NULL;
-	zend_bool allowDups = 0;
+	zend_bool overwrite = 1;
 	long int commitWithin = 0L;
 	solr_document_t *doc_entry = NULL;
 	solr_client_t *client = NULL;
 	HashTable *document_fields;
 	xmlNode *root_node = NULL;
 	xmlDoc *doc_ptr = NULL;
-	char *allowDupsValue = NULL;
+	char *overwriteValue = NULL;
 	int format = 1;
 	int size   = 0;
 	xmlChar *request_string = NULL;
@@ -728,7 +728,7 @@ PHP_METHOD(SolrClient, addDocument)
 	zend_bool success = 1;
 
 	/* Process the parameters passed to the default constructor */
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O|bl", &solr_input_doc, solr_ce_SolrInputDocument, &allowDups, &commitWithin) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O|bl", &solr_input_doc, solr_ce_SolrInputDocument, &overwrite, &commitWithin) == FAILURE) {
 
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid parameter.");
 
@@ -761,9 +761,9 @@ PHP_METHOD(SolrClient, addDocument)
 	}
 
 	doc_ptr = solr_xml_create_xml_doc((xmlChar *) "add", &root_node);
-	allowDupsValue = (allowDups)? "true" : "false";
+	overwriteValue = (overwrite)? "true" : "false";
 
-	xmlNewProp(root_node, (xmlChar *) "allowDups", (xmlChar *) allowDupsValue);
+	xmlNewProp(root_node, (xmlChar *) "overwrite", (xmlChar *) overwriteValue);
 
 	if (commitWithin > 0L)
 	{
@@ -822,12 +822,12 @@ PHP_METHOD(SolrClient, addDocument)
 }
 /* }}} */
 
-/* {{{ proto SolrUpdateResponse SolrClient::addDocuments(array docs [, bool allowDups [, int commitWithin]])
+/* {{{ proto SolrUpdateResponse SolrClient::addDocuments(array docs [, bool overwrite [, int commitWithin]])
    Adds an array of SolrInputDocuments to the Solr server. */
 PHP_METHOD(SolrClient, addDocuments)
 {
 	zval *docs_array = NULL;
-	zend_bool allowDups = 0;
+	zend_bool overwrite = 1;
 	long int commitWithin = 0L;
 	HashTable *solr_input_docs;
 	size_t num_input_docs = 0;
@@ -837,7 +837,7 @@ PHP_METHOD(SolrClient, addDocuments)
 	zend_bool all_docs_are_valid = 1;
 	xmlNode *root_node = NULL;
 	xmlDoc *doc_ptr = NULL;
-	xmlChar *allowDupsValue = NULL;
+	xmlChar *overwriteValue = NULL;
 	size_t pos = 0U;
 	solr_document_t *current_doc_entry = NULL;
 	int format = 1;
@@ -846,7 +846,7 @@ PHP_METHOD(SolrClient, addDocuments)
 	xmlChar *request_string = NULL;
 
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a|bl", &docs_array, &allowDups, &commitWithin) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a|bl", &docs_array, &overwrite, &commitWithin) == FAILURE) {
 
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid parameter");
 
@@ -932,9 +932,9 @@ PHP_METHOD(SolrClient, addDocuments)
 	}
 
 	doc_ptr = solr_xml_create_xml_doc((xmlChar *) "add", &root_node);
-	allowDupsValue = (allowDups) ? (xmlChar *) "true" : (xmlChar *) "false";
+	overwriteValue = (overwrite) ? (xmlChar *) "true" : (xmlChar *) "false";
 
-	xmlNewProp(root_node, (xmlChar *) "allowDups", allowDupsValue);
+	xmlNewProp(root_node, (xmlChar *) "overwrite", overwriteValue);
 
 	if (commitWithin > 0L)
 	{
@@ -1483,14 +1483,14 @@ end_doc_queries_loop :
 }
 /* }}} */
 
-/* {{{ proto SolrUpdateResponse SolrClient::optimize([string maxSegments [, bool waitFlush [, bool waitSearcher]])
+/* {{{ proto SolrUpdateResponse SolrClient::optimize([string maxSegments [, bool softCommit [, bool waitSearcher]])
    Sends an optimize XML request to the server. */
 PHP_METHOD(SolrClient, optimize)
 {
-	zend_bool waitFlush = 1, waitSearcher = 1;
+	zend_bool softCommit = 0, waitSearcher = 1;
 	char *maxSegments = "1";
 	int maxSegmentsLen = sizeof("1")-1;
-	char *waitFlushValue, *waitSearcherValue;
+	char *softCommitValue, *waitSearcherValue;
 	xmlNode *root_node = NULL;
 	xmlDoc *doc_ptr = NULL;
 	solr_client_t *client = NULL;
@@ -1499,20 +1499,20 @@ PHP_METHOD(SolrClient, optimize)
 	xmlChar *request_string = NULL;
 	zend_bool success = 1;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|sbb", &maxSegments, &maxSegmentsLen, &waitFlush, &waitSearcher) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|sbb", &maxSegments, &maxSegmentsLen, &softCommit, &waitSearcher) == FAILURE) {
 
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid parameter");
 
 		return;
 	}
 
-	waitFlushValue = (waitFlush)? "true" : "false";
+	softCommitValue = (softCommit)? "true" : "false";
 	waitSearcherValue = (waitSearcher)? "true" : "false";
 
 	doc_ptr = solr_xml_create_xml_doc((xmlChar *) "optimize", &root_node);
 
 	xmlNewProp(root_node, (xmlChar *) "maxSegments", (xmlChar *) maxSegments);
-	xmlNewProp(root_node, (xmlChar *) "waitFlush", (xmlChar *) waitFlushValue);
+	xmlNewProp(root_node, (xmlChar *) "softCommit", (xmlChar *) softCommitValue);
 	xmlNewProp(root_node, (xmlChar *) "waitSearcher", (xmlChar *) waitSearcherValue);
 
 	if (solr_fetch_client_entry(getThis(), &client TSRMLS_CC) == FAILURE)
@@ -1554,14 +1554,14 @@ PHP_METHOD(SolrClient, optimize)
 }
 /* }}} */
 
-/* {{{ proto SolrUpdateResponse SolrClient::commit([string maxSegments [, bool waitFlush [, bool waitSearcher]])
+/* {{{ proto SolrUpdateResponse SolrClient::commit([string maxSegments [, bool softCommit [, bool waitSearcher]])
    Sends a commit XML request to the server. */
 PHP_METHOD(SolrClient, commit)
 {
-	zend_bool waitFlush = 1, waitSearcher = 1;
+	zend_bool softCommit = 0, waitSearcher = 1;
 	char *maxSegments = "1";
 	int maxSegmentsLen = sizeof("1")-1;
-	char *waitFlushValue, *waitSearcherValue;
+	char *softCommitValue, *waitSearcherValue;
 	xmlNode *root_node = NULL;
 	xmlDoc *doc_ptr = NULL;
 	solr_client_t *client = NULL;
@@ -1570,20 +1570,20 @@ PHP_METHOD(SolrClient, commit)
 	xmlChar *request_string = NULL;
 	zend_bool success = 1;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|sbb", &maxSegments, &maxSegmentsLen, &waitFlush, &waitSearcher) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|sbb", &maxSegments, &maxSegmentsLen, &softCommit, &waitSearcher) == FAILURE) {
 
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid parameter");
 
 		return;
 	}
 
-	waitFlushValue = (waitFlush)? "true" : "false";
+	softCommitValue = (softCommit)? "true" : "false";
 	waitSearcherValue = (waitSearcher)? "true" : "false";
 
 	doc_ptr = solr_xml_create_xml_doc((xmlChar *) "commit", &root_node);
 
 	xmlNewProp(root_node, (xmlChar *) "maxSegments", (xmlChar *) maxSegments);
-	xmlNewProp(root_node, (xmlChar *) "waitFlush", (xmlChar *) waitFlushValue);
+	xmlNewProp(root_node, (xmlChar *) "softCommit", (xmlChar *) softCommitValue);
 	xmlNewProp(root_node, (xmlChar *) "waitSearcher", (xmlChar *) waitSearcherValue);
 
 	if (solr_fetch_client_entry(getThis(), &client TSRMLS_CC) == FAILURE)

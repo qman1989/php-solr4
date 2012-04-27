@@ -29,7 +29,7 @@
 
 #define PHP_SOLR_RELEASE_VERSION PHP_SOLR_PATCH_VERSION
 
-#define PHP_SOLR_DOTTED_VERSION "1.0.1"
+#define PHP_SOLR_DOTTED_VERSION "1.0.4"
 
 /**
  * Extension version numbers using hexadecimal numbers
@@ -52,7 +52,7 @@
 
 #define PHP_SOLR_VERSION_ID 0x010001
 
-#define SOLR_CLIENT_USER_AGENT "PHP Solr Client 1.0.1"
+#define SOLR_CLIENT_USER_AGENT "PHP Solr Client 1.0.4 for Solr 4"
 
 #endif /* PHP_SOLR_VERSION_H */
 

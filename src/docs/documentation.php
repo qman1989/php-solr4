@@ -269,21 +269,21 @@ class SolrClient
      * Adds a document to the index
      * 
      * @param SolrInputDocument $doc
-     * @param bool $allowDups
+     * @param bool $overwrite
      * @param int $commitWithin
      * @return SolrUpdateResponse
      */
-    public function addDocument(SolrInputDocument &$doc, $allowDups, $commitWithin) {}
+    public function addDocument(SolrInputDocument &$doc, $overwrite, $commitWithin) {}
     
     /**
      * Adds a collection of SolrInputDocument instances to the index
      *  
      * @param array $doc An array of SolrInputDocument objects
-     * @param bool $allowDups
+     * @param bool $overwrite
      * @param int $commitWithin
      * @return SolrUpdateResponse
      */
-    public function  addDocuments(array &$docs, $allowDups, $commitWithin) {}
+    public function  addDocuments(array &$docs, $overwrite, $commitWithin) {}
     
     
     /**
